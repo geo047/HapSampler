@@ -1,0 +1,14 @@
+#!/bin/bash 
+
+
+cd /home/geo047/gitHUB_HapSampler/HapSampler/
+
+echo "setwd(\"/home/geo047/gitHUB_HapSampler/HapSampler/\") " > ./tmp
+echo " library(roxygen2)" >>  ./tmp
+echo " roxygenise() " >> ./tmp
+R CMD BATCH ./tmp
+
+cd /home/geo047/gitHUB_HapSampler/
+R CMD check ./HapSampler
+
+

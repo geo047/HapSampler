@@ -1,0 +1,7 @@
+to push changes to github repository
+
+git add filename
+git commit  
+git push origin master
+
+
