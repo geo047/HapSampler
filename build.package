@@ -1,14 +1,66 @@
 #!/bin/bash 
+DIR="/home/geo047/gitHUB_HapSampler/"
 
+rm -rf ./HapSampler ./HapSampler.Rcheck
 
-cd /home/geo047/gitHUB_HapSampler/HapSampler/
+## create and run package.skeleton
+echo "package.skeleton(name=\"HapSampler\",   " > ./tmp
+  echo "    code_files=c(\"hapsampler.R\", \"read_data.R\", \"forfortran.R\", \"summarise.R\")  " >> ./tmp
+#  echo "    code_files=c(\"hapsampler.R\", \"read_data.R\", \"forfortran.R\")  " >> ./tmp
+echo "                 )    " >> ./tmp
 
-echo "setwd(\"/home/geo047/gitHUB_HapSampler/HapSampler/\") " > ./tmp
-echo " library(roxygen2)" >>  ./tmp
-echo " roxygenise() " >> ./tmp
 R CMD BATCH ./tmp
 
-cd /home/geo047/gitHUB_HapSampler/
+
+## runnning roxygen2
+echo  "  ## running roxygen2  " > ./tmp.R
+echo  " library(roxygen2) " >> ./tmp.R
+echo  " setwd(\"./HapSampler\")  " >> ./tmp.R
+echo  "  roxygenise() " >> ./tmp.R
+echo "  " >> tmp.R
+
+# run tmp.R in batch mode of R
+echo "Running R CMD BATCH ./tmp.R"  
+R CMD BATCH ./tmp.R
+
+rm tmp tmp.R
+
+
+## Replace generated NAMESPACE and DESCRIPTION with correct versions
+#cp ./NAMESPACE ./HapSampler/NAMESPACE
+cp ./DESCRIPTION ./HapSampler/DESCRIPTION
+
+## Create ./HapSampler/src and move fortran code into it
+mkdir ./HapSampler/src
+cp ./runf90code.f90  ./HapSampler/src/.
+
+## Create ./HapSampler/inst/extdata and move dataexample.dat into ti
+mkdir ./HapSampler/inst
+mkdir ./HapSampler/inst/extdata
+cp ./dataexample.dat ./HapSampler/inst/extdata/.
+
+## copy HapSampler-package.Rd
+cp ./HapSampler-package.Rd  ./HapSampler/man/.
+
+## copy Makevars to src
+#  cp ./Makevars ./HapSampler/src/.
+
 R CMD check ./HapSampler
 
+
+R CMD INSTALL HapSampler   -l ~/RLibs
+
+## Copy files from newly build HapSampler directory to main directory for upload to 
+## github
+echo "Copying required files/directories out of ./HapSampler directory"
+cd /home/geo047/gitHUB_HapSampler/HapSampler
+
+cp ./NAMESPACE /home/geo047/gitHUB_HapSampler/.
+cp ./DESCRIPTION /home/geo047/gitHUB_HapSampler/.
+cp -rf ./man  /home/geo047/gitHUB_HapSampler/.
+cp -rf ./inst /home/geo047/gitHUB_HapSampler/.
+cp -rf ./R  /home/geo047/gitHUB_HapSampler/.
+cp -rf ./src /home/geo047/gitHUB_HapSampler/.
+
+cd /home/geo047/gitHUB_HapSampler
 

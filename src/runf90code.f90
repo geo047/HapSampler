@@ -8,14 +8,14 @@
 
 ! Deliberate global variables to speed execution
 
-
-
-
-subroutine runit()
+subroutine runf90code()
 !use variables
 
 implicit none
 
+            integer, allocatable :: seed(:)
+            integer ::   j, n, un, istat, dt(8), pid, t(2), s
+            integer(8) :: count, tms
 
 integer :: nanis
 integer :: nhap
@@ -51,10 +51,8 @@ real, dimension(:), allocatable :: geno_hap_log
 real, dimension(:), allocatable :: geno_ani_log
 
 
-
-
-
-integer :: i,j,depth,d,ali,l,jj,srep
+! from runit
+integer :: i,depth,d,ali,l,jj,srep
 integer :: old_geno, new_geno
 
 real :: x,q_ij,q_ji,pi_i, pi_j, PP, PH, prob,lrat,xlim
@@ -68,6 +66,177 @@ integer, dimension(:,:), allocatable :: tempi
 real, dimension(:), allocatable :: likpen_vec
 real, dimension(:), allocatable :: Ppen_vec,Hpen_vec
 character(len=57) :: outfile
+
+
+
+
+integer :: nhap1,nhap2
+
+
+! First file parameters and run parameters 
+
+open(unit=11,file="Data/forfortran.txt",action="read",status="unknown")
+read (11,*) nsamp
+read (11,*) nanis
+
+! Allocate arrays
+allocate(id(nanis))
+allocate(pheno(nanis))
+allocate(g1i(nanis),g2i(nanis),g1j(nanis),g2j(nanis),g(nanis))
+allocate(h1(nanis),h2(nanis))
+allocate(likpen(nanis,3),Ppen(nanis,3),Hpen(nanis,3))
+
+do i = 1,nanis
+  read (11,*) id(i)
+  read (11,*) pheno(i)
+  read (11,*) h1(i),h2(i)
+  read (11,*) Ppen(i,:)
+  read (11,*) Hpen(i,:)
+  read (11,*) likpen(i,:)
+enddo
+
+close(11)
+
+nhap1 = maxval(h1)
+nhap2 = maxval(h2)
+nhap = max(nhap1,nhap2)
+
+allocate(hapgeno(nhap),hapgenocand(nhap),randr(nhap))
+
+! Read in starting values
+
+open(unit=11,file="Data/starting.txt",action="read",status="unknown")
+read (11,*) nhap
+
+do i = 1,nhap
+  read (11,*) hapgeno(i)
+enddo
+
+close(11)
+
+allocate(alleles(nhap),wiped(nhap),ispair(nanis))
+
+allocate(hapgraph(nhap,nhap),nhapgraph(nhap))
+
+! Logs
+allocate(depth_log(nsamp))
+allocate(accept_log(nsamp))
+allocate(pi_i_log(nsamp))
+allocate(pi_j_log(nsamp))
+allocate(q_ij_log(nsamp))
+allocate(q_ji_log(nsamp))
+allocate(geno_hap_log(nhap))
+allocate(geno_ani_log(nanis))
+
+print*,"All data read, ",nhap," haplotype alleles, ",nanis," animals"
+
+
+
+!---------------------------
+!    Prepare
+!---------------------------
+
+
+print*,"Preparing data structures"
+
+nhapgraph = 0
+hapgraph = 0
+
+! hapgraph is a full stored adjancy matrix, which is the hap if
+! an allele pair occured in a diploid animal, zero otherwise.
+
+hapgraph = 0
+
+! First time through, for counting only
+do j = 1,nanis
+  hapgraph(h1(j),h2(j)) = 1
+  hapgraph(h2(j),h1(j)) = 1
+enddo
+
+! Zero diagonals
+do j = 1,nhap
+  hapgraph(j,j) = 0
+enddo
+
+! counts
+
+do i = 1,nhap
+  nhapgraph(i) = sum(hapgraph(i,:))
+enddo
+
+! Redo, with col number this time
+hapgraph = 0
+do j = 1,nanis
+  hapgraph(h1(j),h2(j)) = h2(j)
+  hapgraph(h2(j),h1(j)) = h1(j)
+enddo
+
+! Zero diagonals
+do j = 1,nhap
+  hapgraph(j,j) = 0
+enddo
+
+j = min(nhap,20)
+
+open(unit=13,file="Temp/hapgraph.txt",action="write",status="unknown")
+do i = 1,j
+  write(13,"(66I6)") nhapgraph(i),hapgraph(i,1:j)
+enddo
+close(13)
+
+print*,"Data structures prepared"
+
+!-----------------------
+!  init_random_seed
+!-----------------------
+
+          
+            un = 44
+            call random_seed(size = n)
+            allocate(seed(n))
+            ! First try if the OS provides a random number generator
+            !open(newunit=un, file="/dev/urandom", access="stream", &
+            !     form="unformatted", action="read", status="old", iostat=istat)
+            !if (istat == 0) then
+            !   read(un) seed
+            !   close(un)
+            !else
+               ! Fallback to XOR:ing the current time and pid. The PID is
+               ! useful in case one launches multiple instances of the same
+               ! program in parallel.
+               call system_clock(count)
+               if (count /= 0) then
+                  t = transfer(count, t)
+               else
+                  call date_and_time(values=dt)
+                  tms = (dt(1) - 1970) * 365_8 * 24 * 60 * 60 * 1000 &
+                       + dt(2) * 31_8 * 24 * 60 * 60 * 1000 &
+                       + dt(3) * 24 * 60 * 60 * 60 * 1000 &
+                       + dt(5) * 60 * 60 * 1000 &
+                       + dt(6) * 60 * 1000 + dt(7) * 1000 &
+                       + dt(8)
+                  t = transfer(tms, t)
+               end if
+               s = ieor(t(1), t(2))
+               pid = 1099279 ! Add a prime
+               s = ieor(s, pid)
+               if (n >= 3) then
+                  seed(1) = t(1) + 36269
+                  seed(2) = t(2) + 72551
+                  seed(3) = pid
+                  if (n > 3) then
+                     seed(4:) = s + 37 * (/ (i, i = 0, n - 4) /)
+                  end if
+               else
+                  seed = s + 37 * (/ (i, i = 0, n - 1 ) /)
+               end if
+            !end if
+            call random_seed(put=seed)
+            print*,"Random Number Generator seeded"
+
+!-------------------------------
+!  runit
+!-------------------------------
 
 
 xlim = 15
@@ -373,285 +542,10 @@ enddo
 print*,"Runned"
 
 
-end subroutine runit
+end subroutine runf90code
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 
-subroutine read_data_f90()
-!use variables
 
-implicit none
-
-
-integer :: nanis
-integer :: nhap
-integer :: nsamp
-
-! AWG integer, dimension(:), allocatable :: id
-character(len=10), dimension(:), allocatable :: id
-integer, dimension(:), allocatable :: hapgeno,hapgenocand
-integer, dimension(:), allocatable :: g1i,g2i,g,g1j,g2j
-
-integer, dimension(:), allocatable :: h1,h2,ispair  ! haplotype alleles
-
-character(len=10), dimension(:), allocatable :: pheno
-
-integer, dimension(:), allocatable :: alleles
-logical, dimension(:), allocatable :: wiped
-
-real, dimension(:,:), allocatable :: likpen, Ppen, Hpen
-
-real, dimension(:), allocatable :: randr
-
-integer, dimension(:,:), allocatable :: hapgraph
-integer, dimension(:), allocatable :: nhapgraph
-
-! Logs
-integer, dimension(:), allocatable :: depth_log
-logical, dimension(:), allocatable :: accept_log
-real, dimension(:), allocatable :: pi_i_log
-real, dimension(:), allocatable :: pi_j_log
-real, dimension(:), allocatable :: q_ij_log
-real, dimension(:), allocatable :: q_ji_log
-real, dimension(:), allocatable :: geno_hap_log
-real, dimension(:), allocatable :: geno_ani_log
-
-
-
-
-
-integer :: i,nhap1,nhap2
-
-
-! First file parameters and run parameters 
-
-open(unit=11,file="Data/forfortran.txt",action="read",status="unknown")
-read (11,*) nsamp
-read (11,*) nanis
-
-! Allocate arrays
-allocate(id(nanis))
-allocate(pheno(nanis))
-allocate(g1i(nanis),g2i(nanis),g1j(nanis),g2j(nanis),g(nanis))
-allocate(h1(nanis),h2(nanis))
-allocate(likpen(nanis,3),Ppen(nanis,3),Hpen(nanis,3))
-
-do i = 1,nanis
-  read (11,*) id(i)
-  read (11,*) pheno(i)
-  read (11,*) h1(i),h2(i)
-  read (11,*) Ppen(i,:)
-  read (11,*) Hpen(i,:)
-  read (11,*) likpen(i,:)
-enddo
-
-close(11)
-
-nhap1 = maxval(h1)
-nhap2 = maxval(h2)
-nhap = max(nhap1,nhap2)
-
-allocate(hapgeno(nhap),hapgenocand(nhap),randr(nhap))
-
-! Read in starting values
-
-open(unit=11,file="Data/starting.txt",action="read",status="unknown")
-read (11,*) nhap
-
-do i = 1,nhap
-  read (11,*) hapgeno(i)
-enddo
-
-close(11)
-
-allocate(alleles(nhap),wiped(nhap),ispair(nanis))
-
-allocate(hapgraph(nhap,nhap),nhapgraph(nhap))
-
-! Logs
-allocate(depth_log(nsamp))
-allocate(accept_log(nsamp))
-allocate(pi_i_log(nsamp))
-allocate(pi_j_log(nsamp))
-allocate(q_ij_log(nsamp))
-allocate(q_ji_log(nsamp))
-allocate(geno_hap_log(nhap))
-allocate(geno_ani_log(nanis))
-
-print*,"All data read, ",nhap," haplotype alleles, ",nanis," animals"
-
-
-end subroutine read_data_f90
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
-subroutine prepare()
-!use variables
-
-implicit none
-
-integer :: nanis
-integer :: nhap
-integer :: nsamp
-
-! AWG integer, dimension(:), allocatable :: id
-character(len=10), dimension(:), allocatable :: id
-integer, dimension(:), allocatable :: hapgeno,hapgenocand
-integer, dimension(:), allocatable :: g1i,g2i,g,g1j,g2j
-
-integer, dimension(:), allocatable :: h1,h2,ispair  ! haplotype alleles
-
-character(len=10), dimension(:), allocatable :: pheno
-
-integer, dimension(:), allocatable :: alleles
-logical, dimension(:), allocatable :: wiped
-
-real, dimension(:,:), allocatable :: likpen, Ppen, Hpen
-
-real, dimension(:), allocatable :: randr
-
-integer, dimension(:,:), allocatable :: hapgraph
-integer, dimension(:), allocatable :: nhapgraph
-
-! Logs
-integer, dimension(:), allocatable :: depth_log
-logical, dimension(:), allocatable :: accept_log
-real, dimension(:), allocatable :: pi_i_log
-real, dimension(:), allocatable :: pi_j_log
-real, dimension(:), allocatable :: q_ij_log
-real, dimension(:), allocatable :: q_ji_log
-real, dimension(:), allocatable :: geno_hap_log
-real, dimension(:), allocatable :: geno_ani_log
-
-
-
-
-
-
-
-integer :: i,j,x
-
-
-print*,"Preparing data structures"
-
-nhapgraph = 0
-hapgraph = 0
-
-! hapgraph is a full stored adjancy matrix, which is the hap if
-! an allele pair occured in a diploid animal, zero otherwise.
-
-hapgraph = 0
-
-! First time through, for counting only
-do j = 1,nanis
-  hapgraph(h1(j),h2(j)) = 1
-  hapgraph(h2(j),h1(j)) = 1
-enddo
-
-! Zero diagonals
-do j = 1,nhap
-  hapgraph(j,j) = 0
-enddo
-
-! counts
-
-do i = 1,nhap
-  nhapgraph(i) = sum(hapgraph(i,:))
-enddo
-
-! Redo, with col number this time
-hapgraph = 0
-do j = 1,nanis
-  hapgraph(h1(j),h2(j)) = h2(j)
-  hapgraph(h2(j),h1(j)) = h1(j)
-enddo
-
-! Zero diagonals
-do j = 1,nhap
-  hapgraph(j,j) = 0
-enddo
-
-j = min(nhap,20)
-
-open(unit=13,file="Temp/hapgraph.txt",action="write",status="unknown")
-do i = 1,j
-  write(13,"(66I6)") nhapgraph(i),hapgraph(i,1:j)
-enddo
-close(13)
-
-print*,"Data structures prepared"
-
-end subroutine prepare
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-subroutine init_random_seed()
-            implicit none
-            integer, allocatable :: seed(:)
-            integer :: i, n, un, istat, dt(8), pid, t(2), s
-            integer(8) :: count, tms
-          
-            un = 44
-            call random_seed(size = n)
-            allocate(seed(n))
-            ! First try if the OS provides a random number generator
-            !open(newunit=un, file="/dev/urandom", access="stream", &
-            !     form="unformatted", action="read", status="old", iostat=istat)
-            !if (istat == 0) then
-            !   read(un) seed
-            !   close(un)
-            !else
-               ! Fallback to XOR:ing the current time and pid. The PID is
-               ! useful in case one launches multiple instances of the same
-               ! program in parallel.
-               call system_clock(count)
-               if (count /= 0) then
-                  t = transfer(count, t)
-               else
-                  call date_and_time(values=dt)
-                  tms = (dt(1) - 1970) * 365_8 * 24 * 60 * 60 * 1000 &
-                       + dt(2) * 31_8 * 24 * 60 * 60 * 1000 &
-                       + dt(3) * 24 * 60 * 60 * 60 * 1000 &
-                       + dt(5) * 60 * 60 * 1000 &
-                       + dt(6) * 60 * 1000 + dt(7) * 1000 &
-                       + dt(8)
-                  t = transfer(tms, t)
-               end if
-               s = ieor(t(1), t(2))
-               pid = 1099279 ! Add a prime
-               s = ieor(s, pid)
-               if (n >= 3) then
-                  seed(1) = t(1) + 36269
-                  seed(2) = t(2) + 72551
-                  seed(3) = pid
-                  if (n > 3) then
-                     seed(4:) = s + 37 * (/ (i, i = 0, n - 4) /)
-                  end if
-               else
-                  seed = s + 37 * (/ (i, i = 0, n - 1 ) /)
-               end if
-            !end if
-            call random_seed(put=seed)
-            print*,"Random Number Generator seeded"
-end subroutine init_random_seed
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-!program hapsampler
-
-!use variables
-!implicit none 
-
-!call read_data_f90()
-!call prepare()
-!call init_random_seed()
-!call runit()
-
-!end program hapsampler
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
