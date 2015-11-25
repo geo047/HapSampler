@@ -2,7 +2,6 @@
 #' @aliases plotlike
 #' @description  A log likelihood trace plot of hapsampler output.
 #' @param  x a \code{HS} object, obtained from running \code{\link{hapsampler}}.
-#'  @param ...   additional plot options. (not yet implemented).
 #' @details
 #' Produces a plot of the change in log likelihood for each chain, over 
 #' the run length.  It is useful for looking for agreeement between chains and also 
@@ -20,7 +19,6 @@ plotLike <- function(x)
 #' @aliases plotlike.HS
 #' @description  A log likelihood trace plot of hapsampler output.
 #' @param  x a \code{HS} object, obtained from running \code{\link{hapsampler}}.
-#'  @param ...   additional plot options. (not yet implemented).
 #' @details
 #' Produces a plot of the change in log likelihood for each chain, over 
 #' the run length.  It is useful for looking for agreeement between chains and also 
@@ -107,11 +105,11 @@ canon <- x[["canonical.hap"]]
 ##--------------------------
 #' @title Plot Effects
 #' @aliases ploteffects
-#' @description  A trace plot of the mean effect sizes of AA, AB, and BB from 
+#' @description  A trace plot of the mean qtl effect sizes of QQ, Qq, and qq from 
 #'       the running of \code{\link{hapsampler}}.
 #' @param  x a \code{HS} object, obtained from running \code{\link{hapsampler}}.
 #' @details
-#' Produces a plot of the change in mean effect size  for each chain, over 
+#' Produces a plot of the change in mean qtl effect size  for each chain, over 
 #' the run length.  It is useful for looking for agreeement between chains and also 
 #' that the mean effect size estimates are behaving. 
 #' @return
@@ -127,7 +125,7 @@ plotEffects <- function(x )
 
 #' @title Plot Effects
 #' @aliases ploteffects.HS
-#' @description  A trace plot of the mean effect sizes of AA, AB, and BB from 
+#' @description  A trace plot of the mean qtl effect sizes of QQ, Qq, and qq from 
 #'       the running of \code{\link{hapsampler}}.
 #' @param  x a \code{HS} object, obtained from running \code{\link{hapsampler}}.
 #' @details
@@ -156,7 +154,7 @@ chain <- NULL
   # Mu and Stdev
   #######################################
 
-  lab <- c("AA","AB","BB")
+  lab <- c("QQ","Qq","qq")
 
 #  fn <- paste(x[["trait"]],"/effects.jpg",sep="") 
 #  jpeg(filename = fn, 
@@ -233,7 +231,6 @@ chain <- NULL
       leg.txt <- c(leg.txt,paste("chain ",repl,sep=""))
       leg.col <- c(leg.col,repl+1)
 
-      lab <- c("AA","AB","BB")
 
       if (repl == 1) {
 
@@ -252,11 +249,6 @@ chain <- NULL
   }
 
 
-#  dev.off()
-
-  return(flip)
-
-
 }
 
 
@@ -265,43 +257,61 @@ chain <- NULL
 ##--------------------------
 #   Scatter plots 
 ##--------------------------
-#' @title Haplotype and Allele Scatter Plots
-#' @description  Various scatter plots involving haplotypes and observed alleles (ordered by mean Prob(A))
-#' verse Prob(A). 
+#' @title Haplotype and QTL Allele Scatter Plots
+#' @description  Various scatter plots involving the sampled haplotypes and sampled QTL alleles. 
 #' @param  x a \code{HS} object, obtained from running \code{\link{hapsampler}}.
-#' @details This function opens a graphic window that contains three plots. The first 
-#' plot is of the sampled haplotypes (ordered by Prob(A)) against Prob(A).  The second plot 
-#' is similar, except the scater plot is of the unique haplotypes, binned according to the levels 
-#' given in the legend. The third plot is of the QTL alleles, ordered by mean P....
-#' Produces a plot of the change in mean effect size  for each chain, over 
-#' the run length.  It is useful for looking for agreeement between chains and also 
-#' that the mean effect size estimates are behaving. 
+#' @param  nbins the number of bins for dividing the sampled haplotype frequency. 
+#' @details  A single graphic window is open, containing three plots. 
+#'
+#' The top left  plot is of the sampled haplotypes within a chain verse the probability of that 
+#' haplotype carring QTL allele Q.  The sammpled haplotypes are ordered based on their average 
+#' allele Q probability (Prob(Q)).  The results from each chain are coloured 
+#' differently.  This plot is useful for identifying those haplotypes that have been sampled differently 
+#' across the parallel chains  (i.e. we don't want points a long way away from the red fitted line). 
+#'
+#'
+#' The top right plot is of the sampled haplotypes across chains verse the probability of that 
+#' haplotype carrying QTL allele Q. The sampled haplotypes are colour coded, depending upon 
+#' frequency of being sampled across all n chains. The frequency ranges associated with the colours
+#' are given in the legend.
+#' 
+#' The bottom left plot is a scatter plot of the sampled QTL allele Q verse 
+#' its probability.  
 #' @return
 #'   a plotting window is opened.
 #' @seealso  \code{\link{plotLike}}
 #' @export
-plotscatter  <- function(x )
+plotscatter  <- function(x, nbins=10 )
 {
   UseMethod("plotscatter")
 }
 
 
-#' @title Haplotype and Allele Scatter Plots
-#' @description  Various scatter plots involving haplotypes and observed alleles (ordered by mean Prob(A))
-#' verse Prob(A). 
+#' @title Haplotype and QTL Allele Scatter Plots
+#' @description  Various scatter plots involving the sampled haplotypes and sampled QTL alleles. 
 #' @param  x a \code{HS} object, obtained from running \code{\link{hapsampler}}.
-#' @details This function opens a graphic window that contains three plots. The first 
-#' plot is of the sampled haplotypes (ordered by Prob(A)) against Prob(A).  The second plot 
-#' is similar, except the scater plot is of the unique haplotypes, binned according to the levels 
-#' given in the legend. The third plot is of the QTL alleles, ordered by mean P....
-#' Produces a plot of the change in mean effect size  for each chain, over 
-#' the run length.  It is useful for looking for agreeement between chains and also 
-#' that the mean effect size estimates are behaving. 
+#' @param  nbins the number of bins for dividing the sampled haplotype frequency. 
+#' @details  A single graphic window is open, containing three plots. 
+#'
+#' The top left  plot is of the sampled haplotypes within a chain verse the probability of that 
+#' haplotype carrying QTL allele Q.  The sammpled haplotypes are ordered based on their average 
+#' allele Q probability (Prob(Q)).  The results from each chain are coloured 
+#' differently.  This plot is useful for identifying those haplotypes that have been sampled differently 
+#' across the parallel chains  (i.e. we don't want points a long way away from the red fitted line). 
+#'
+#'
+#' The top right plot is of the sampled haplotypes across chains verse the probability of that 
+#' haplotype carrying QTL allele Q. The sampled haplotypes are colour coded, depending upon 
+#' frequency of being sampled across all n chains. The frequency ranges associated with the colours
+#' are given in the legend.
+#' 
+#' The bottom left plot is a scatter plot of the sampled QTL allele Q verse 
+#' its probability.  
 #' @return
 #'   a plotting window is opened.
 #' @seealso  \code{\link{plotLike}}
 #' @export
-plotscatter.HS <- function(x) {
+plotscatter.HS <- function(x, nbins) {
   # Identify those that need to be flipped
   flip <- array(FALSE,x[["nchains"]])
 
@@ -313,7 +323,7 @@ plotscatter.HS <- function(x) {
 
 
 
-par(mfrow=c(2,2))
+  par(mfrow=c(2,2))
 
 
   # First need haplotype counts
@@ -364,16 +374,18 @@ par(mfrow=c(2,2))
     if (repl == 1) {
       if (x[["nchains"]] > 1) {
         plot(pP[,repl],col=repl+1,pch=20,cex=0.6,
+        main="Sampled QTL-marker haplotypes",
           xlim = c(0,nhap),
           ylim = c(0,1),
-          xlab = "Haplotype (ordered by mean Prob(A))",
-          ylab = "Prob(A)")
+          xlab = "Haplotype (ordered by mean Prob(Q))",
+          ylab = "Prob(Q)")
       } else {
         plot(pP,col=repl+1,pch=20,cex=0.6,
+        main="Sampled QTL-marker haplotypes",
           xlim = c(0,nhap),
           ylim = c(0,1),
-          xlab = "Haplotype (ordered by mean Prob(A))",
-          ylab = "Prob(A)")
+          xlab = "Haplotype (ordered by Prob(Q))",
+          ylab = "Prob(Q)")
       }
     } else {
       points(pP[,repl],col=repl+1,pch=20,cex=0.6)
@@ -400,38 +412,43 @@ par(mfrow=c(2,2))
 
   # Left panel is by haplotype allele
 
-  ss <- ohp[ohp$count == 1,]
-  plot(ss$xx,ss$PA,col=2,pch=20,cex=0.7,
-        main = "Unique Haplotypes",
+
+  h <- hist(ohp$count, plot=FALSE, breaks = nbins)
+  breaks <- h$breaks
+  counts <- h$counts
+  breaks[counts>0]
+
+  ## set up initial plot
+  ss <- subset(ohp, ohp$count >= breaks[1] & ohp$count <= breaks[2])
+  indx <- sample(2:657,nbins,FALSE)
+  leg.col <- colors()[indx[1]]
+  plot(ss$xx,ss$PA,col=leg.col,pch=20,cex=0.7,
+        main="Sampled QTL-marker haplotypes",
         xlim = c(0,nhap),
         ylim = c(0,1),
-        xlab = "Haplotype (ordered by mean Prob(A))",
-        ylab = "Prob(A)")
+        xlab = "Haplotype (ordered by mean Prob(Q))",
+        ylab = "Prob(Q)")
 
-  ss <- subset(ohp,ohp$count == 2)
-  points(ss$xx,ss$PA,col=3,pch=20,cex=0.6)
+  for(ii in 2:(nbins-1)){
+     if(counts[ii] > 0){
+        ss <- subset(ohp, ohp$count > breaks[ii] & ohp$count <= breaks[ii+1])
+        points(ss$xx,ss$PA,col=colors()[indx[ii]],pch=20,cex=0.6)
+        leg.col <- c(leg.col, colors()[indx[ii]])
+     }
+  }
 
-  ss <- subset(ohp,ohp$count > 2 & ohp$count <= 5)
-  points(ss$xx,ss$PA,col=4,pch=20,cex=0.6)
+  leg.txt <- vector("character", 0)
+  for(ii in 1:(nbins-1)){
+     if(counts[ii] > 0){
+       leg.txt <- c(leg.txt, paste(breaks[ii], "-", breaks[ii+1], sep=" "))
+     }
+  }
+  
+  legend("topright", inset=0.05, leg.txt,fill=leg.col,horiz=FALSE,cex=0.8)
 
-  ss <- subset(ohp,ohp$count > 5 & ohp$count <= 10)
-  points(ss$xx,ss$PA,col=5,pch=20,cex=0.6)
 
-  ss <- subset(ohp,ohp$count > 10 & ohp$count <= 20)
-  points(ss$xx,ss$PA,col=6,pch=20,cex=0.6)
 
-  ss <- subset(ohp,ohp$count > 20)
-  points(ss$xx,ss$PA,col=7,pch=20,cex=0.6)
 
-  leg.txt <- c(
-        "1",
-        "2",
-        "3-5",
-        "6-10",
-        "11-20",
-        ">20")
-  leg.col <- c(2,3,4,5,6,7)
-  legend("topleft", inset=0.05, leg.txt,fill=leg.col,horiz=FALSE,cex=0.8)
 
   # In right panel the x axis is by times seen
 
@@ -445,18 +462,14 @@ par(mfrow=c(2,2))
   full.ohp$xx <- 1:nfhap
 
   plot(full.ohp$xx,full.ohp$PA,col=2,pch=20,cex=0.6,
-        main = "Observed alleles",
+        main = "Sampled alleles",
         xlim = c(0,nfhap),
         ylim = c(0,1),
-        xlab = "Allele (ordered by mean Prob(A))",
-        ylab = "Prob(A)")
+        xlab = "Allele (ordered by mean Prob(Q))",
+        ylab = "Prob(Q)")
 
 
 
-#  ohp <- ohp[,1:3]
-#  ohp <- ohp[order(ohp$haplotype),]
-
-#  ohp
 
 }
 

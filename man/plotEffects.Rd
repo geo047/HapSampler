@@ -14,11 +14,11 @@ plotEffects(x)
 a plotting window is opened.
 }
 \description{
-A trace plot of the mean effect sizes of AA, AB, and BB from
+A trace plot of the mean qtl effect sizes of QQ, Qq, and qq from
       the running of \code{\link{hapsampler}}.
 }
 \details{
-Produces a plot of the change in mean effect size  for each chain, over
+Produces a plot of the change in mean qtl effect size  for each chain, over
 the run length.  It is useful for looking for agreeement between chains and also
 that the mean effect size estimates are behaving.
 }

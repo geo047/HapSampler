@@ -9,8 +9,6 @@ plotLike(x)
 }
 \arguments{
 \item{x}{a \code{HS} object, obtained from running \code{\link{hapsampler}}.}
-
-\item{...}{additional plot options. (not yet implemented).}
 }
 \value{
 a plotting window is opened.

@@ -14,7 +14,7 @@
 a plotting window is opened.
 }
 \description{
-A trace plot of the mean effect sizes of AA, AB, and BB from
+A trace plot of the mean qtl effect sizes of QQ, Qq, and qq from
       the running of \code{\link{hapsampler}}.
 }
 \details{

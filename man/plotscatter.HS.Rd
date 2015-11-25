@@ -2,28 +2,38 @@
 % Please edit documentation in R/summarise.R
 \name{plotscatter.HS}
 \alias{plotscatter.HS}
-\title{Haplotype and Allele Scatter Plots}
+\title{Haplotype and QTL Allele Scatter Plots}
 \usage{
-\method{plotscatter}{HS}(x)
+\method{plotscatter}{HS}(x, nbins)
 }
 \arguments{
 \item{x}{a \code{HS} object, obtained from running \code{\link{hapsampler}}.}
+
+\item{nbins}{the number of bins for dividing the sampled haplotype frequency.}
 }
 \value{
 a plotting window is opened.
 }
 \description{
-Various scatter plots involving haplotypes and observed alleles (ordered by mean Prob(A))
-verse Prob(A).
+Various scatter plots involving the sampled haplotypes and sampled QTL alleles.
 }
 \details{
-This function opens a graphic window that contains three plots. The first
-plot is of the sampled haplotypes (ordered by Prob(A)) against Prob(A).  The second plot
-is similar, except the scater plot is of the unique haplotypes, binned according to the levels
-given in the legend. The third plot is of the QTL alleles, ordered by mean P....
-Produces a plot of the change in mean effect size  for each chain, over
-the run length.  It is useful for looking for agreeement between chains and also
-that the mean effect size estimates are behaving.
+A single graphic window is open, containing three plots.
+
+The top left  plot is of the sampled haplotypes within a chain verse the probability of that
+haplotype carrying QTL allele Q.  The sammpled haplotypes are ordered based on their average
+allele Q probability (Prob(Q)).  The results from each chain are coloured
+differently.  This plot is useful for identifying those haplotypes that have been sampled differently
+across the parallel chains  (i.e. we don't want points a long way away from the red fitted line).
+
+
+The top right plot is of the sampled haplotypes across chains verse the probability of that
+haplotype carrying QTL allele Q. The sampled haplotypes are colour coded, depending upon
+frequency of being sampled across all n chains. The frequency ranges associated with the colours
+are given in the legend.
+
+The bottom left plot is a scatter plot of the sampled QTL allele Q verse
+its probability.
 }
 \seealso{
 \code{\link{plotLike}}
