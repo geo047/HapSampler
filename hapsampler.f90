@@ -538,7 +538,6 @@ real, dimension(:), allocatable :: geno_ani_log
 integer :: i,j,x
 
 
-print*,"Preparing data structures"
 
 nhapgraph = 0
 hapgraph = 0
@@ -585,7 +584,6 @@ do i = 1,j
 enddo
 close(13)
 
-print*,"Data structures prepared"
 
 end subroutine prepare
 
@@ -637,7 +635,6 @@ subroutine init_random_seed()
                end if
             !end if
             call random_seed(put=seed)
-            print*,"Random Number Generator seeded"
 end subroutine init_random_seed
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -258,22 +258,25 @@ chain <- NULL
 #   Scatter plots 
 ##--------------------------
 #' @title Haplotype and QTL Allele Scatter Plots
+#' @aliases plotScatter
 #' @description  Various scatter plots involving the sampled haplotypes and sampled QTL alleles. 
 #' @param  x a \code{HS} object, obtained from running \code{\link{hapsampler}}.
-#' @param  nbins the number of bins for dividing the sampled haplotype frequency. 
+#' @param  nbins the number of bins for grouping the frequency each of the haploytpes are 
+#' sampled. 
 #' @details  A single graphic window is open, containing three plots. 
 #'
 #' The top left  plot is of the sampled haplotypes within a chain verse the probability of that 
-#' haplotype carring QTL allele Q.  The sammpled haplotypes are ordered based on their average 
-#' allele Q probability (Prob(Q)).  The results from each chain are coloured 
-#' differently.  This plot is useful for identifying those haplotypes that have been sampled differently 
+#' haplotype carrying the Q  allele.  The sammpled haplotypes are ordered based on their average 
+#' Q allele probability (Prob(Q)).  The results from each chain are coloured 
+#' differently.  This plot is useful for identifying those marker-QTL haplotypes that have been sampled differently 
 #' across the parallel chains  (i.e. we don't want points a long way away from the red fitted line). 
 #'
 #'
 #' The top right plot is of the sampled haplotypes across chains verse the probability of that 
 #' haplotype carrying QTL allele Q. The sampled haplotypes are colour coded, depending upon 
-#' frequency of being sampled across all n chains. The frequency ranges associated with the colours
-#' are given in the legend.
+#' their frequency of being sampled across all n chains. The frequency ranges and colours, for the bins,
+#' are given in the legend. The number of bins is adjusted by setting \code{nbins}. 
+#' Bin ranges with 0 frequency are not listed in the legend. 
 #' 
 #' The bottom left plot is a scatter plot of the sampled QTL allele Q verse 
 #' its probability.  
@@ -281,29 +284,32 @@ chain <- NULL
 #'   a plotting window is opened.
 #' @seealso  \code{\link{plotLike}}
 #' @export
-plotscatter  <- function(x, nbins=10 )
+plotScatter  <- function(x, nbins=10 )
 {
-  UseMethod("plotscatter")
+  UseMethod("plotScatter")
 }
 
 
 #' @title Haplotype and QTL Allele Scatter Plots
+#' @aliases plotScatter.HS
 #' @description  Various scatter plots involving the sampled haplotypes and sampled QTL alleles. 
 #' @param  x a \code{HS} object, obtained from running \code{\link{hapsampler}}.
-#' @param  nbins the number of bins for dividing the sampled haplotype frequency. 
+#' @param  nbins the number of bins for grouping the frequency each of the haploytpes are 
+#' sampled. 
 #' @details  A single graphic window is open, containing three plots. 
 #'
 #' The top left  plot is of the sampled haplotypes within a chain verse the probability of that 
-#' haplotype carrying QTL allele Q.  The sammpled haplotypes are ordered based on their average 
-#' allele Q probability (Prob(Q)).  The results from each chain are coloured 
-#' differently.  This plot is useful for identifying those haplotypes that have been sampled differently 
+#' haplotype carrying the Q  allele.  The sammpled haplotypes are ordered based on their average 
+#' Q allele probability (Prob(Q)).  The results from each chain are coloured 
+#' differently.  This plot is useful for identifying those marker-QTL haplotypes that have been sampled differently 
 #' across the parallel chains  (i.e. we don't want points a long way away from the red fitted line). 
 #'
 #'
 #' The top right plot is of the sampled haplotypes across chains verse the probability of that 
 #' haplotype carrying QTL allele Q. The sampled haplotypes are colour coded, depending upon 
-#' frequency of being sampled across all n chains. The frequency ranges associated with the colours
-#' are given in the legend.
+#' their frequency of being sampled across all n chains. The frequency ranges and colours, for the bins,
+#' are given in the legend. The number of bins is adjusted by setting \code{nbins}. 
+#' Bin ranges with 0 frequency are not listed in the legend. 
 #' 
 #' The bottom left plot is a scatter plot of the sampled QTL allele Q verse 
 #' its probability.  
@@ -311,7 +317,7 @@ plotscatter  <- function(x, nbins=10 )
 #'   a plotting window is opened.
 #' @seealso  \code{\link{plotLike}}
 #' @export
-plotscatter.HS <- function(x, nbins) {
+plotScatter.HS <- function(x, nbins=10) {
   # Identify those that need to be flipped
   flip <- array(FALSE,x[["nchains"]])
 
@@ -429,7 +435,7 @@ plotscatter.HS <- function(x, nbins) {
         xlab = "Haplotype (ordered by mean Prob(Q))",
         ylab = "Prob(Q)")
 
-  for(ii in 2:(nbins-1)){
+  for(ii in 2:length(counts)){
      if(counts[ii] > 0){
         ss <- subset(ohp, ohp$count > breaks[ii] & ohp$count <= breaks[ii+1])
         points(ss$xx,ss$PA,col=colors()[indx[ii]],pch=20,cex=0.6)
@@ -438,7 +444,7 @@ plotscatter.HS <- function(x, nbins) {
   }
 
   leg.txt <- vector("character", 0)
-  for(ii in 1:(nbins-1)){
+  for(ii in 1:length(counts)){
      if(counts[ii] > 0){
        leg.txt <- c(leg.txt, paste(breaks[ii], "-", breaks[ii+1], sep=" "))
      }

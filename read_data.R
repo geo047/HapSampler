@@ -1,6 +1,7 @@
 #' @title read_data  
 #' @aliases read_data
-#' @description Read in data file.
+#' @description Read data from the data file that contains the trait data, haplotypes, 
+#' and the probability of the haplotype pair occurring in the population.
 #' @param path  a character vector containing the absolute path for where the
 #'          phenotype file is located.  The default is that the data file
 #'          is contained in the directory from which R is being run.
@@ -15,17 +16,16 @@
 #'     data file is the data for a seperate animal.  The data file is
 #'     allowed to have any number of columns. 
 #'
-#'     Three columns are mandatory in order for ‘hapsampler’ to function
-#'     correctly; the two haplotype indexes and a haplotype probability.
-#'     These three columns must be named hap1, hap2, and prob where prob
-#'     is the haplotype probability of the first haplotype (hap1). The
-#'     function will stop if the column names hap1, hap2, and prob are
-#'     not found.
+#'     Four columns are mandatory in order for \code{\link{hapsampler}} to function
+#'     correctly; a column with the trait data, two columns with the 
+#'     haplotypes, and a column with the haploytpe probabilities. The trait column
+#'     can be named anything but the columns with the haplotypes and their probability 
+#'     must be named hap1, hap2, and prob, respectively. 
 #'
 #'     The columns hap1 and hap2 contain the haplotype indexes. These
 #'     indexes can be any integer number.
 #'
-#'     NOTE WHAT about missing data???
+#'     WHAT about missing data???
 #'
 #' @return 
 #'     a data frame is returned of the data. The names of the columns

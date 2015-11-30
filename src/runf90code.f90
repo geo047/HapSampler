@@ -128,7 +128,7 @@ allocate(q_ji_log(nsamp))
 allocate(geno_hap_log(nhap))
 allocate(geno_ani_log(nanis))
 
-print*,"All data read, ",nhap," haplotype alleles, ",nanis," animals"
+! print*,"All data read, ",nhap," haplotype alleles, ",nanis," animals"
 
 
 
@@ -137,7 +137,6 @@ print*,"All data read, ",nhap," haplotype alleles, ",nanis," animals"
 !---------------------------
 
 
-print*,"Preparing data structures"
 
 nhapgraph = 0
 hapgraph = 0
@@ -184,7 +183,6 @@ do i = 1,j
 enddo
 close(13)
 
-print*,"Data structures prepared"
 
 !-----------------------
 !  init_random_seed
@@ -232,7 +230,6 @@ print*,"Data structures prepared"
                end if
             !end if
             call random_seed(put=seed)
-            print*,"Random Number Generator seeded"
 
 !-------------------------------
 !  runit
@@ -240,7 +237,6 @@ print*,"Data structures prepared"
 
 
 xlim = 15
-print*,"xlim",xlim
 
 allocate(local_hapgraph(nhap,nhap),local_nhapgraph(nhap),indi(nhap))
 allocate(likpen_vec(nanis))
@@ -505,7 +501,6 @@ enddo
 
   !outfile = "Temp/samplog_" // char(rep+ ichar("0")) // ".txt"
   outfile = "Temp/samplog.txt"
-  print*,"Writing ",outfile
   open(unit=11,file=outfile,action="write",status="replace")
   write(11,*) "sample depth pi_i pi_j q_ij q_ji accept"
   do srep = 1,nsamp 
@@ -516,7 +511,6 @@ enddo
 
   !outfile = "Temp/anilog_" // char(rep+ ichar("0")) // ".txt"
   outfile = "Temp/anilog.txt"
-  print*,"Writing ",outfile
   open(unit=11,file=outfile,action="write",status="replace")
   write(11,*) "id pheno hap1 hap2 phap1 phap2 ppoll last1 last2"
   do srep = 1,nanis 
@@ -530,7 +524,6 @@ enddo
 
   !outfile = "Temp/haplog_" // char(rep+ ichar("0")) // ".txt"
   outfile = "Temp/haplog.txt"
-  print*,"Writing ",outfile
   open(unit=11,file=outfile,action="write",status="replace")
   write(11,*) "haplotype ppoll last"
   do srep = 1,nhap 
@@ -539,7 +532,6 @@ enddo
   close(11)
   
 
-print*,"Runned"
 
 
 end subroutine runf90code

@@ -2,11 +2,11 @@
 
 S3method(plotEffects,HS)
 S3method(plotLike,HS)
-S3method(plotscatter,HS)
+S3method(plotScatter,HS)
 export(hapsampler)
 export(is.HS)
 export(plotEffects)
 export(plotLike)
-export(plotscatter)
+export(plotScatter)
 export(read_data)
 useDynLib(HapSampler)
