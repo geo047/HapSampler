@@ -40,11 +40,11 @@ devtools::install_github("geo047/HapSampler")
 
 Suppose, you would like to install "HapSampler" into a local directory, say /home/id/RLib 
 
-Then, you just need to add a ".libPath" command as follows
+Then, you just need to add a ".libPaths" command as follows
 
 ```R
 library("devtools")
-.libPath(c(.libPath(), "/home/id/RLib"))
+.libPaths(c(.libPaths(), "/home/id/RLib"))
 devtools::install_github("geo047/HapSampler")
 ```
 
