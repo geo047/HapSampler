@@ -25,14 +25,28 @@ help(hapsampler)
 
 This package is best installed from within R.
 
-To install the package, directly from github, use the following commands:
+To install the package, directly from github, you need the "devtools" package which can be installed with
 
 ```R
 install.packages("devtools")
+```
+
+Then, to install the HapSampler package, run the commands
+
+```R
+library("devtools")
 devtools::install_github("geo047/HapSampler")
 ```
 
+Suppose, you would like to install "HapSampler" into a local directory, say /home/id/RLib 
 
+Then, you just need to add a ".libPaths" command as follows
+
+```R
+library("devtools")
+.libPaths(c(.libPaths(), "/home/id/RLib"))
+devtools::install_github("geo047/HapSampler")
+```
 
  
 

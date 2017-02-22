@@ -9,8 +9,8 @@
 #'          specified.
 #' @param  nchains  the number of parallel chains to be run.
 #' @param  runlength the run length of each chain
-#' @param probthresh a probability value between 0 and 1. Haplotypes with
-#'          haplotype probabilities less than \code{probthresh}  are discarded.
+#' @param probthresh a probability theshold value.  Data on animals whose haplotype probability is less
+#' than \code{probthresh} will be ignored. 
 #' 
 #' @details 
 #' This function implements a MCMC algorithm for sampling the space of marker-QTL genotypes, 
@@ -28,13 +28,17 @@
 #' @return 
 #' A list like object of class HS is returned with elements
 #' \itemize{
-#' \item{"trait"}{trait name}
-#' \item{"nchains"}{number of chains}
-#' \item{"canonical.hap"}{used by plotting functions}
-#' \item{"haplotypes"}{a data.frame object containing the sampled haplotypes, 
-#' the number of times the haplotype is sampled across the chains, the mean probability of
-#' the haplotype including QTL allele Q as approximated by the MCMC run, and the probability of 
-#' the haplotype including  QTL allele Q for each chain. }
+#' \item trait:  the trait name
+#' \item nchains: the number of chains
+#' \item canonical.hap: this is the haplotype that is the most common in the input data. 
+#' \item haplotypes: a data.frame object containing
+#' \itemize{
+#'    \item Haplotype:  the haplotype index
+#'    \item Count: the frequency of the haplotype in the input data file after data on those animals with a haplotype probability less than 
+#'    \code{probthresh} have been removed.
+#'    \item MeanProb(Q):  the probability of this haplotype carrying the Q qtl allele, averaged over the mean of the Q allele probabilities from each chain
+#'     \item Prob(Q):Chain1:  the mean probability of this haplotype carrying the Q qtl allele, for chain 1. This field is repeated for each chain that is run.
+#' }
 #' } 
 #' @examples
 #'
@@ -49,7 +53,7 @@
 #'     # a plot of the log likelihood for each chain against run length
 #'     plotLike(hapres)
 #'
-#'  @export
+#' @export
  hapsampler <- function (data = NULL, trait = NULL, 
                          nchains=3,
                          runlength=30,
@@ -110,7 +114,7 @@ pen.resample <- runlength ## to be consistent with John's original naming
     h1 <- with(data, hap1)
     h2 <- with(data, hap2)
     maxhap <- max(max(h1), max(h2))
-    #pen.resample <- 10
+    #pen.resample <- 100
     nburn <- as.integer(pen.resample/2)
     nkeep <- pen.resample - nburn
     nsamp <- as.integer(2000)
@@ -122,7 +126,7 @@ pen.resample <- runlength ## to be consistent with John's original naming
     b <- 0
     nanis <- length(h1)
     min.n <- nanis/40
-
+    cat(" set min.n to 2 for testing only .... \n")
 
  
 
@@ -142,6 +146,8 @@ for (i in 1:nchains) {
   samp.pen.mu[3] <- max(cphen,na.rm=T)
   samp.pen.mu[2] <- mean(samp.pen.mu,na.rm=T)
 
+
+
   samp.pen.sd <- array(sqrt(var(cphen,na.rm=T)),3)/5
 
 
@@ -149,6 +155,7 @@ for (i in 1:nchains) {
   nfail <- 0
   while (j <= pen.resample) {
     cat(" Performing run ",j, "in chain ", i, "\n")
+    
     if (j == 1) {
       hap.assign <- sample.int(2,maxhap,replace=T) # In here rather than outside
                                         # loop to guard against an invalid 
@@ -177,8 +184,10 @@ for (i in 1:nchains) {
       y <- ss$pheno[!is.na(ss$pheno)]
       n[zz] <- length(y)
 
+      ## cat(zz, "n[zz],  = ", n[zz], "and min.n is ", min.n, " .. \n")
       if (n[zz] < min.n) { # Guard against low allele frequency spaces
         fail <- TRUE
+        ## cat(" in here don't know why ... ", n[zz], min.n, "\n")
       } else {
 
         # Initialise
@@ -201,6 +210,7 @@ for (i in 1:nchains) {
     }  ## end for each zz
 
     if (!fail) {
+      print("in here ")
       nfail <- 0
       samp.pen.mu <- vmu
       samp.pen.sd <- vsig
@@ -212,6 +222,7 @@ for (i in 1:nchains) {
         kept <- kept + 1
         hapstore <- hapstore + haplog$ppoll
         phap1store <- phap1store + anilog$phap1
+  
         phap2store <- phap2store + anilog$phap2
         mustore <- mustore + samp.pen.mu
         sigstore <- sigstore + samp.pen.sd
@@ -219,13 +230,17 @@ for (i in 1:nchains) {
     } else {
       nfail <- nfail + 1
     }  ## if (!fail) else
-    if (nfail > 10000) {break}
+    if (nfail > 10) {
+stop(" Hapsampler terminated. Bad run. Rerun.")
+}
   }  ##  while (j <= pen.resample)
 
  #############
 
   ofn <- paste("Temp/anisols_",i,".txt",sep="")
 
+  ## phap1 average haplotype probability across iterations of chain that is being kept. 
+  ## phap2 average haplotype probability across iterations of chain that is being kept. 
   anisols <- data.frame(
         id = anilog$id,
         pheno = anilog$pheno,
@@ -293,7 +308,7 @@ for (i in 1:nchains) {
 
 
  # First need haplotype counts
-
+  ## anisols contains average hap prob across iterations that are being kept. 
   anis = read.table("Temp/anisols_1.txt",header=T)
   haps <- c(anis$hap1,anis$hap2)
 

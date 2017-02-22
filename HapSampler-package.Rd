@@ -9,7 +9,7 @@ their probability
 \description{
 An MCMC implementation for constructing joint marker-QTL haplotypes and for 
 approximating their probability. The input data consists of 
-the trait data  and the observed marker haplotypes  on a set 
+the trait data  and the observed marker haplotypes  on a set of animals. 
 The trait data can be continuous or discrete.  Functions are available for 
 reading in the data, for analysing the data via MCMC, and for plotting the results from the MCMC runs. 
 }

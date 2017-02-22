@@ -285,7 +285,7 @@ enddo
       
     alleles(1) = ali
 
-
+    ! Maybe not changing everything here, just some of the QTL genotypes?
     ! Sample a depth to wipe
     call random_number(x)
     i = 1

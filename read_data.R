@@ -25,7 +25,8 @@
 #'     The columns hap1 and hap2 contain the haplotype indexes. These
 #'     indexes can be any integer number.
 #'
-#'     WHAT about missing data???
+#'     Missing data are not allowed. 
+#'
 #'
 #' @return 
 #'     a data frame is returned of the data. The names of the columns
@@ -96,6 +97,10 @@
     for (ii in 1:ncol(phdata)) cat(c(sprintf("%20s   %15s", names(phdata)[ii], 
         class(phdata[[ii]])), "\n"))
     cat("\n Warning: if the column classes are incorrect, these will need to be changed by the user.\n\n\n")
+
+    # convert haps into 1:unique
+  #  hap1 <- as.numeric(as.factor(phdata[["hap1"]]))
+  #  hap2 <- as.numeric(as.factor(phdat[["hap2"]]))
     return(phdata)
 }
 

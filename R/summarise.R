@@ -123,9 +123,10 @@ plotEffects <- function(x )
 
 
 
-#' @title Plot Effects
+#' @title Mean and Standard Deviation Plots of QTL  Effects
 #' @aliases ploteffects.HS
-#' @description  A trace plot of the mean qtl effect sizes of QQ, Qq, and qq from 
+#' @description  A trace plot of the mean and standard deviation of 
+#' qtl effect sizes of QQ, Qq, and qq from 
 #'       the running of \code{\link{hapsampler}}.
 #' @param  x a \code{HS} object, obtained from running \code{\link{hapsampler}}.
 #' @details
@@ -200,8 +201,8 @@ chain <- NULL
           #xlim = c(0,(nburn+nsamp)),
           ylim = c(miny,maxy),
           main = lab[i],
-          xlab = "sample",
-          ylab = "effect")
+          xlab = "Mean",
+          ylab = "QTL genotype effect size")
 
       } else {
         lines(mmu[,j],type="l",col=(repl+1))
@@ -238,8 +239,8 @@ chain <- NULL
           #xlim = c(0,(nburn+nsamp)),
           ylim = c(miny,maxy),
           main = lab[i],
-          xlab = "stdev",
-          ylab = "effect")
+          xlab = "Standard Deviation",
+          ylab = "QTL genotype effect size")
 
       } else {
         lines(msd[,j],type="l",col=(repl+1))
