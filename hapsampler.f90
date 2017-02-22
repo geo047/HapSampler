@@ -427,7 +427,7 @@ integer :: i,nhap1,nhap2
 
 ! First file parameters and run parameters 
 
-open(unit=11,file="Data/forfortran.txt",action="read",status="unknown")
+open(unit=11,file="TmpData/forfortran.txt",action="read",status="unknown")
 read (11,*) nsamp
 read (11,*) nanis
 
@@ -457,7 +457,7 @@ allocate(hapgeno(nhap),hapgenocand(nhap),randr(nhap))
 
 ! Read in starting values
 
-open(unit=11,file="Data/starting.txt",action="read",status="unknown")
+open(unit=11,file="TmpData/starting.txt",action="read",status="unknown")
 read (11,*) nhap
 
 do i = 1,nhap

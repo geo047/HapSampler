@@ -93,7 +93,7 @@ pen.resample <- runlength ## to be consistent with John's original naming
     } else {
         dir_path <- paste(getwd(), "\\", sep = "")
     }
-    datapath <- paste(dir_path, "Data", sep = "")
+    datapath <- paste(dir_path, "TmpData", sep = "")
     dir.create(datapath, showWarnings = FALSE, recursive = FALSE, mode = "0777")
 
     datapath <- paste(dir_path, "Temp", sep = "")

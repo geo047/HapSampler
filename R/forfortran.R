@@ -133,7 +133,7 @@
 
   # Write out input file
 
-  ofn <- "Data/forfortran.txt"
+  ofn <- "TmpData/forfortran.txt"
 
   write(nchains,file=ofn, append = F)
   write(nburn,file=ofn, append = T)
@@ -211,7 +211,7 @@
 
   # Write out input file
 
-  ofn <- "Data/forfortran.txt"
+  ofn <- "TmpData/forfortran.txt"
 
   write(nsamp,file=ofn, append = F)
   write(nanis,file=ofn, append = T)
@@ -228,7 +228,7 @@
 
   # Write out starting values
 
-  ofn <- "Data/starting.txt"
+  ofn <- "TmpData/starting.txt"
 
   l <- length(hap.assign)
   write(l,file=ofn, append = F)
